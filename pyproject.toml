@@ -18,7 +18,9 @@ dependencies = [
     "chromadb (>=1.5.9,<2.0.0)",
     "fastapi (>=0.136.1,<0.137.0)",
     "uvicorn (>=0.47.0,<0.48.0)",
-    "streamlit (>=1.57.0,<2.0.0)"
+    "streamlit (>=1.57.0,<2.0.0)",
+    "requests (>=2.34.2,<3.0.0)",
+    "pandas-stubs (>=3.0.0.260204,<4.0.0.0)"
 ]
 
 [tool.poetry]
