@@ -43,3 +43,6 @@ data/raw/
 
 # Chroma vector database
 data/chroma_db/
+
+# Poetry error logs
+poetry-installer-error-*.log
