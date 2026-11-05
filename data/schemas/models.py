@@ -7,10 +7,11 @@ in the presentation layer).
 """
 
 from datetime import date, datetime
+from decimal import Decimal
+from sqlalchemy import Numeric
 
 from sqlalchemy import (
     BigInteger,
-    Float,
     ForeignKey,
     MetaData,
     String,
@@ -69,12 +70,12 @@ class PriceHistory(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     stock_id: Mapped[int] = mapped_column(ForeignKey("stocks.id"), index=True)
     date: Mapped[date]
-    open_price: Mapped[float | None] = mapped_column(Float)
-    high: Mapped[float | None] = mapped_column(Float)
-    low: Mapped[float | None] = mapped_column(Float)
-    close: Mapped[float | None] = mapped_column(Float)
+    open_price: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
+    high: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
+    low: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
+    close: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
     volume: Mapped[int | None] = mapped_column(BigInteger)
-    adjusted_close: Mapped[float | None] = mapped_column(Float)
+    adjusted_close: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     stock: Mapped["Stock"] = relationship(back_populates="price_history")
@@ -94,18 +95,18 @@ class FinancialData(Base):
     period_date: Mapped[date]                              # last day of the reporting period
 
     # Income statement
-    revenue: Mapped[float | None] = mapped_column(Float)
-    net_income: Mapped[float | None] = mapped_column(Float)
-    eps: Mapped[float | None] = mapped_column(Float)
+    revenue: Mapped[Decimal | None] = mapped_column(Numeric(20,2))
+    net_income: Mapped[Decimal | None] = mapped_column(Numeric(20,2))
+    eps: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
 
     # Balance-sheet / efficiency ratios
-    debt_to_equity: Mapped[float | None] = mapped_column(Float)
-    roe: Mapped[float | None] = mapped_column(Float)   # Return on Equity
-    roce: Mapped[float | None] = mapped_column(Float)  # Return on Capital Employed
+    debt_to_equity: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
+    roe: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))   # Return on Equity
+    roce: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))  # Return on Capital Employed
 
     # Valuation multiples (point-in-time snapshot, not live)
-    pe_ratio: Mapped[float | None] = mapped_column(Float)
-    pb_ratio: Mapped[float | None] = mapped_column(Float)
+    pe_ratio: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
+    pb_ratio: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
