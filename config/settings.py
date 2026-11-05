@@ -32,8 +32,8 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"
 
     # ── LLM ───────────────────────────────────────────────────────────────────
-    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
-    LLM_MODEL: str = "claude-sonnet-4-20250514"
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    LLM_MODEL: str = "gpt-4.1-mini"
     LLM_MAX_TOKENS: int = 4096
     LLM_TEMPERATURE: float = 0.2  # Low temperature = more consistent reasoning
 
@@ -41,10 +41,7 @@ class Settings:
     NEWS_API_KEY: str = os.getenv("NEWS_API_KEY", "")
 
     # ── Database ──────────────────────────────────────────────────────────────
-    DATABASE_URL: str = os.getenv(
-        "DATABASE_URL",
-        f"sqlite:///{BASE_DIR}/mosaic_drishti.db"
-    )
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
 
     # ── Vector Database ───────────────────────────────────────────────────────
     CHROMA_PERSIST_DIR: str = os.getenv(
@@ -70,5 +67,8 @@ class Settings:
 # ── Single instance imported everywhere ───────────────────────────────────────
 # Usage in any module:
 #   from config.settings import settings
-#   print(settings.ANTHROPIC_API_KEY)
+#   print(settings.OPENAI_API_KEY)
 settings = Settings()
+
+if not settings.DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set. Add it to .env (see .env.example).")
