@@ -8,16 +8,18 @@ display in IST in the presentation layer.
 
 from datetime import date, datetime
 from decimal import Decimal
-from sqlalchemy import Numeric, DateTime
 
 from sqlalchemy import (
     BigInteger,
+    DateTime,
     ForeignKey,
     MetaData,
+    Numeric,
     String,
     Text,
     UniqueConstraint,
     func,
+    true,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -48,7 +50,7 @@ class Stock(Base):
     sector: Mapped[str | None] = mapped_column(String(100))
     industry: Mapped[str | None] = mapped_column(String(100))
     exchange: Mapped[str] = mapped_column(String(10))  # "NSE" or "BSE"
-    is_active: Mapped[bool] = mapped_column(default=True)
+    is_active: Mapped[bool] = mapped_column(default=True, server_default=true())
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         server_default=func.now(), onupdate=func.now()
@@ -75,7 +77,7 @@ class PriceHistory(Base):
     __table_args__ = (UniqueConstraint("stock_id", "date", name="uq_price_stock_date"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    stock_id: Mapped[int] = mapped_column(ForeignKey("stocks.id"), index=True)
+    stock_id: Mapped[int] = mapped_column(ForeignKey("stocks.id"))
     date: Mapped[date]
     open_price: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
     high: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
@@ -102,7 +104,7 @@ class FinancialData(Base):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    stock_id: Mapped[int] = mapped_column(ForeignKey("stocks.id"), index=True)
+    stock_id: Mapped[int] = mapped_column(ForeignKey("stocks.id"))
     period_type: Mapped[str] = mapped_column(String(10))  # "annual" | "quarterly"
     period_date: Mapped[date]  # last day of the reporting period
 
