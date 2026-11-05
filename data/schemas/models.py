@@ -8,7 +8,7 @@ in the presentation layer).
 
 from datetime import date, datetime
 from decimal import Decimal
-from sqlalchemy import Numeric
+from sqlalchemy import Numeric, DateTime
 
 from sqlalchemy import (
     BigInteger,
@@ -30,6 +30,9 @@ class Base(DeclarativeBase):
         "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
         "pk": "pk_%(table_name)s",
     })
+    type_annotation_map = {
+        datetime: DateTime(timezone=True),
+    }
 
 
 class Stock(Base):
