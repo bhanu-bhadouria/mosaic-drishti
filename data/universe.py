@@ -2,6 +2,8 @@
 # This is our research universe — the stocks Mosaic Drishti will track
 # Add or remove symbols here to expand/shrink the universe
 
+from data.ingestion.exceptions import UnknownTickerError
+
 NIFTY_50 = {
     "RELIANCE.NS": "Reliance Industries",
     "TCS.NS": "Tata Consultancy Services",
@@ -28,11 +30,18 @@ NIFTY_50 = {
 # Start with 20 stocks — enough to build and test the pipeline
 # Full Nifty 50 can be added once ingestion is stable
 
+
 def get_all_tickers() -> list[str]:
     """Return list of all ticker symbols in the universe."""
     return list(NIFTY_50.keys())
 
 
-def get_company_name(ticker: str) -> str:
-    """Return company name for a given ticker symbol."""
-    return NIFTY_50.get(ticker, "Unknown")
+def require_known_ticker(symbol: str) -> str:
+    """Return the company name for a symbol in the universe.
+
+    Raises UnknownTickerError for anything else, rather than inventing a placeholder name.
+    """
+    try:
+        return NIFTY_50[symbol]
+    except KeyError:
+        raise UnknownTickerError(symbol) from None

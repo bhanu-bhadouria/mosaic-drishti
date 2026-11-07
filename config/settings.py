@@ -58,6 +58,7 @@ class Settings:
     DEFAULT_CURRENCY: str = "INR"
     DATA_CACHE_TTL: int = 3600        # Cache market data for 1 hour (seconds)
     MAX_HISTORY_YEARS: int = 5        # How far back we fetch historical data
+    MAX_REJECT_RATIO: float = 0.05    # Reject a whole ticker if over 5% of its rows fail validation
 
     # ── Agent Behaviour ───────────────────────────────────────────────────────
     AGENT_MAX_RETRIES: int = 3        # Retry failed LLM calls up to 3 times
