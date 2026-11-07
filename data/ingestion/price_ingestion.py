@@ -8,7 +8,6 @@ function has one job.
 
 import logging
 from datetime import datetime
-from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -17,6 +16,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from config.settings import settings
+from data.ingestion.convert import to_decimal, to_int
 from data.ingestion.exceptions import DataQualityError, NoDataError
 from data.schemas.models import PriceHistory
 from data.universe import require_known_ticker
@@ -39,7 +39,7 @@ PRICE_FIELDS = ["open_price", "high", "low", "close", "adjusted_close"]
 PRICE_TOLERANCE = 0.01
 
 # "Today" means today on the NSE, not on whatever machine this runs on (Azure is UTC)
-MARKET_TZ = ZoneInfo("Asia/Kolkata")
+MARKET_TZ = ZoneInfo(settings.MARKET_TIMEZONE)
 
 
 def fetch_prices(symbol: str, period: str | None = None) -> pd.DataFrame:
@@ -119,25 +119,6 @@ def validate_prices(symbol: str, df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Dat
     return valid, rejected
 
 
-def _to_decimal(value) -> Decimal | None:
-    """NaN/None -> None, otherwise an exact Decimal of the printed float.
-
-    Checks NaN first because Postgres NUMERIC would happily store 'NaN'.
-    str() first so 3899.949951171875 becomes Decimal("3899.949951171875"),
-    not the float's full binary expansion; Postgres then rounds to Numeric(14, 4).
-    """
-    if value is None or pd.isna(value):
-        return None
-    return Decimal(str(value))
-
-
-def _to_int(value) -> int | None:
-    """NaN/None -> None, otherwise int (one NaN turns a whole column into floats)."""
-    if value is None or pd.isna(value):
-        return None
-    return int(value)
-
-
 def store_prices(session: Session, stock_id: int, df: pd.DataFrame) -> int:
     """Upsert validated price rows for one stock and return how many were written.
 
@@ -149,12 +130,12 @@ def store_prices(session: Session, stock_id: int, df: pd.DataFrame) -> int:
         {
             "stock_id": stock_id,
             "date": row.date,
-            "open_price": _to_decimal(row.open_price),
-            "high": _to_decimal(row.high),
-            "low": _to_decimal(row.low),
-            "close": _to_decimal(row.close),
-            "adjusted_close": _to_decimal(row.adjusted_close),
-            "volume": _to_int(row.volume),
+            "open_price": to_decimal(row.open_price),
+            "high": to_decimal(row.high),
+            "low": to_decimal(row.low),
+            "close": to_decimal(row.close),
+            "adjusted_close": to_decimal(row.adjusted_close),
+            "volume": to_int(row.volume),
         }
         for row in df.itertuples(index=False)
     ]
