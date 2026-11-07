@@ -46,3 +46,6 @@ data/chroma_db/
 
 # Poetry error logs
 poetry-installer-error-*.log
+# Test coverage
+.coverage
+htmlcov/

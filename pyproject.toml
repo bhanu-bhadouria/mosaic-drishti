@@ -36,5 +36,13 @@ build-backend = "poetry.core.masonry.api"
 dev = [
     "pytest (>=9.0.3,<10.0.0)",
     "ruff (>=0.15.13,<0.16.0)",
-    "ipykernel (>=7.4.0,<8.0.0)"
+    "ipykernel (>=7.4.0,<8.0.0)",
+    "pytest-socket (>=0.8.1,<0.9.0)",
+    "pytest-cov (>=7.1.0,<8.0.0)"
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: needs the local Postgres test database (run with make test-integration)"]
+# No test may reach the internet; plain `pytest` runs only the fast unit tests
+addopts = "--disable-socket -m 'not integration'"
