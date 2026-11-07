@@ -108,18 +108,25 @@ class FinancialData(Base):
     period_type: Mapped[str] = mapped_column(String(10))  # "annual" | "quarterly"
     period_date: Mapped[date]  # last day of the reporting period
 
+    # ── Raw values, as reported (from yfinance, in rupees) ──
+    # Nullable throughout: banks report no EBIT or current liabilities.
     # Income statement
     revenue: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
     net_income: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
     eps: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
+    ebit: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
+    # Balance sheet
+    total_debt: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
+    stockholders_equity: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
+    total_assets: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
+    current_liabilities: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
 
-    # Balance-sheet / efficiency ratios
+    # ── Derived ratios (calculated by us from the raw values above, never fetched) ──
+    # Stored because agents read them often; recompute them if a raw value changes.
     debt_to_equity: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
     roe: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))  # Return on Equity
-    roce: Mapped[Decimal | None] = mapped_column(
-        Numeric(12, 4)
-    )  # Return on Capital Employed
-
+    # Return on Capital Employed
+    roce: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
     # Valuation multiples (point-in-time snapshot, not live)
     pe_ratio: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
     pb_ratio: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
