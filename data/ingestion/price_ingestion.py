@@ -53,14 +53,12 @@ def fetch_prices(symbol: str, period: str | None = None) -> pd.DataFrame:
     if period is None:
         period = f"{settings.MAX_HISTORY_YEARS}y"
 
-    raw = yf.download(
-        symbol,
-        period=period,
-        auto_adjust=False,
-        multi_level_index=False,
-        progress=False,
-        actions=False,
-    )
+    # Ticker.history, not yf.download: download() catches every exception, including
+    # YFRateLimitError, and returns an empty frame, so a rate limit would look like
+    # "no data" for every ticker. history() returns the same data (verified on
+    # 1.3.0) but lets YFRateLimitError propagate. Its index is tz-aware (IST);
+    # .date below gives the same exchange dates.
+    raw = yf.Ticker(symbol).history(period=period, auto_adjust=False, actions=False)
     if raw.empty:
         raise NoDataError(symbol)
 

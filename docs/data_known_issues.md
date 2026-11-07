@@ -119,3 +119,27 @@ unexplained or unverified, so treat the affected values with care.
 - Postgres takes a sequence value for every row an upsert tries to insert, even
   when it ends as an update (e.g. HDFC Bank's stock id is 10, not 2).
 - **Handling:** harmless at this scale. Never assume ids are consecutive.
+
+### Rate limits are invisible to some yfinance calls
+
+- On yfinance 1.3.0, `Ticker.history()` and `Ticker.info` raise `YFRateLimitError`,
+  but `yf.download()` and the statement properties (`financials`, `balance_sheet`, …)
+  catch it internally and return an empty frame, which would look like "no data".
+- **Handling:** `fetch_prices()` uses `Ticker.history()` (same data as `download()`,
+  verified), and `fetch_stock_info()` re-raises the rate limit instead of degrading.
+  `pipeline._with_retry()` retries those with exponential backoff, then stops the run.
+- **Remaining gap:** a rate limit hit *only* during `fetch_financials()` shows up as
+  `NoDataError("no financial statements")` for that ticker. In practice the info and
+  price calls run first for every ticker, so a real rate limit surfaces there.
+
+---
+
+## Planned improvements
+
+### Incremental daily fetch plus weekly full refresh
+
+- Today every run re-downloads 5 years of prices to pick up one new day, and each
+  re-run spends about 1,237 sequence ids per ticker on conflicting inserts.
+- **Plan:** a daily run fetches from the last stored date minus a few days' buffer
+  (to correct an intraday row); a weekly run re-fetches full history to pick up
+  dividend back-adjustments to `adjusted_close`.

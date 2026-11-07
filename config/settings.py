@@ -61,6 +61,11 @@ class Settings:
     MAX_HISTORY_YEARS: int = 5        # How far back we fetch historical data
     MAX_REJECT_RATIO: float = 0.05    # Reject a whole ticker if over 5% of its rows fail validation
 
+    # ── Ingestion ─────────────────────────────────────────────────────────────
+    INGEST_MAX_RETRIES: int = 3          # Retries after a Yahoo rate limit before stopping the run
+    INGEST_RETRY_BASE_DELAY: float = 2.0  # Seconds before the first retry; doubles each time (2, 4, 8)
+    INGEST_TICKER_PAUSE: float = 1.0     # Seconds between tickers, to avoid hitting the rate limit
+
     # ── Agent Behaviour ───────────────────────────────────────────────────────
     AGENT_MAX_RETRIES: int = 3        # Retry failed LLM calls up to 3 times
     AGENT_TIMEOUT_SECONDS: int = 60   # Fail agent if no response in 60s

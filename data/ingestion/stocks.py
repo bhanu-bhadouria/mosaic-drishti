@@ -10,6 +10,7 @@ stock row and its price rows commit together or not at all.
 import logging
 
 import yfinance as yf
+from yfinance.exceptions import YFRateLimitError
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
@@ -25,13 +26,16 @@ def fetch_stock_info(symbol: str) -> dict:
     """Return name, sector, industry and exchange for a symbol in the universe.
 
     t.info is slow and unreliable, so a failure degrades to sector and industry
-    set to None rather than failing the ticker.
+    set to None rather than failing the ticker. The exception is a rate limit:
+    it's systemic, so it propagates for the caller to retry or stop the run.
     """
     universe_name = require_known_ticker(symbol)
     try:
         info = yf.Ticker(symbol).info
         if not info:
             raise ValueError("empty response")
+    except YFRateLimitError:
+        raise
     except Exception as e:  # any yfinance/network failure here only costs us metadata
         logger.warning(
             "%s: info lookup failed (%s); sector/industry unknown", symbol, e
