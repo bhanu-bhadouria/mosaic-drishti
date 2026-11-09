@@ -3,7 +3,7 @@
 # Run `make help` to see all available commands
 # ─────────────────────────────────────────────────────
 
-.PHONY: help install shell test test-integration lint clean logs run
+.PHONY: help install shell ingest test test-integration lint clean logs run
 
 # ── Help ─────────────────────────────────────────────
 help:
@@ -12,6 +12,7 @@ help:
 	@echo "─────────────────────────────────────"
 	@echo "make install   → Install all dependencies"
 	@echo "make shell     → Activate Poetry shell"
+	@echo "make ingest    → Ingest prices + financials (SYMBOLS=\"TCS.NS INFY.NS\" for a subset)"
 	@echo "make test      → Run unit tests (fast, no network, no database)"
 	@echo "make test-integration → Run integration tests (local Postgres test DB)"
 	@echo "make lint      → Check code quality"
@@ -27,6 +28,12 @@ install:
 # ── Development Shell ────────────────────────────────
 shell:
 	poetry shell
+
+# ── Data ingestion ───────────────────────────────────
+# Exits non-zero if any ticker failed (partial results still exit 0)
+SYMBOLS ?=
+ingest:
+	poetry run python -m data.ingestion $(SYMBOLS)
 
 # ── Testing ──────────────────────────────────────────
 test:

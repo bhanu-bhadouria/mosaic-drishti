@@ -9,6 +9,7 @@ from unittest import mock
 
 import pandas as pd
 import pytest
+from alembic.script import ScriptDirectory
 from sqlalchemy import func, select, text
 
 from data.ingestion import pipeline
@@ -51,11 +52,12 @@ def _stored(session, column, stock_id):
     return session.scalar(select(column).where(FinancialData.stock_id == stock_id))
 
 
-def test_migrations_build_the_schema_from_scratch(db_session):
+def test_migrations_build_the_schema_from_scratch(db_session, alembic_config):
     head = db_session.execute(
         text("SELECT version_num FROM alembic_version")
     ).scalar_one()
-    assert head == "8ec34c228497"
+    # Alembic's own head, so this doesn't break when the next migration is added
+    assert head == ScriptDirectory.from_config(alembic_config).get_current_head()
     columns = db_session.execute(
         text(
             "SELECT column_name FROM information_schema.columns WHERE table_name = 'financial_data'"

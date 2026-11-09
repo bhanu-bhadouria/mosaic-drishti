@@ -125,9 +125,15 @@ unexplained or unverified, so treat the affected values with care.
 - On yfinance 1.3.0, `Ticker.history()` and `Ticker.info` raise `YFRateLimitError`,
   but `yf.download()` and the statement properties (`financials`, `balance_sheet`, …)
   catch it internally and return an empty frame, which would look like "no data".
-- **Handling:** `fetch_prices()` uses `Ticker.history()` (same data as `download()`,
-  verified), and `fetch_stock_info()` re-raises the rate limit instead of degrading.
-  `pipeline._with_retry()` retries those with exponential backoff, then stops the run.
+- **Handling:** `fetch_stock_info()` re-raises the rate limit instead of degrading,
+  and `pipeline._with_retry()` retries with exponential backoff, then stops the run.
+- **Design change (Step 9): `fetch_prices()` calls `yf.Ticker(symbol).history()`,
+  not `yf.download()`.** The Step 1 exploration used `download()`; it was switched
+  so rate limits propagate. Verified on 5 years of TCS: same 1,237 dates and
+  identical values in every column, and an unknown ticker still returns an empty
+  frame. Differences: `history()` already returns flat columns (no
+  `multi_level_index` flag needed), and its index is timezone-aware (Asia/Kolkata)
+  rather than naive; `.date` gives the same exchange dates either way.
 - **Remaining gap:** a rate limit hit *only* during `fetch_financials()` shows up as
   `NoDataError("no financial statements")` for that ticker. In practice the info and
   price calls run first for every ticker, so a real rate limit surfaces there.

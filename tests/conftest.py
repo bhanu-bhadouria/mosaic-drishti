@@ -132,7 +132,15 @@ def statement():
 
 
 @pytest.fixture(scope="session")
-def test_engine():
+def alembic_config():
+    """The project's Alembic config, with paths that work from any directory."""
+    cfg = Config(str(ROOT / "alembic.ini"))
+    cfg.set_main_option("script_location", str(ROOT / "alembic"))
+    return cfg
+
+
+@pytest.fixture(scope="session")
+def test_engine(alembic_config):
     """Engine for a freshly migrated mosaic_drishti_test database.
 
     Dropped and rebuilt each run, which also proves the migrations can build
@@ -148,11 +156,11 @@ def test_engine():
     admin.dispose()
 
     engine = create_engine(url)
-    cfg = Config(str(ROOT / "alembic.ini"))
-    cfg.set_main_option("script_location", str(ROOT / "alembic"))
     with engine.begin() as conn:
-        cfg.attributes["connection"] = conn  # env.py migrates this connection
-        command.upgrade(cfg, "head")
+        alembic_config.attributes["connection"] = (
+            conn  # env.py migrates this connection
+        )
+        command.upgrade(alembic_config, "head")
     yield engine
     engine.dispose()
 
