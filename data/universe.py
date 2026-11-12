@@ -30,6 +30,15 @@ NIFTY_50 = {
 # Start with 20 stocks — enough to build and test the pipeline
 # Full Nifty 50 can be added once ingestion is stable
 
+# Common short forms that don't appear in the names above (keys upper-case).
+# Only for stocks in the universe; used by agents.tools.symbols.resolve_symbol.
+ALIASES = {
+    "RIL": "RELIANCE.NS",
+    "HUL": "HINDUNILVR.NS",
+    "SBI": "SBIN.NS",
+    "L&T": "LT.NS",
+}
+
 
 def get_all_tickers() -> list[str]:
     """Return list of all ticker symbols in the universe."""
